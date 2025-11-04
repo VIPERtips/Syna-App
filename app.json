@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Pali",
-    "slug": "pali",
+    "name": "Palii",
+    "slug": "palik",
     "version": "1.0.0",
-     "platforms": ["ios", "android"],
+   //  "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "pali",
@@ -15,7 +15,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "co.zw.blexta.pali"
+      "package": "co.zw.blexta.palii"
     },
     "web": {
       "bundler": "metro",

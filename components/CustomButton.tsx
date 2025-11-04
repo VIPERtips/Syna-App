@@ -4,17 +4,23 @@ import { Text, TouchableOpacity, View } from "react-native";
 type CustomButtonProps = {
   onPress?: () => void;
   title: string | React.ReactNode;
-  bgVariant?: 
-    | "primary" 
-    | "secondary" 
-    | "success" 
-    | "info" 
-    | "warning" 
-    | "danger" 
-    | "ghost" 
-    | "link"
-    | "outline";
-  textVariant?: "default" | "light" | "dark";
+  bgVariant?:
+    | "pali-primary"
+    | "pali-secondary"
+    | "pali-accent"
+    | "pali-destructive"
+    | "pali-ghost"
+    | "pali-outline"
+    | "hero-gradient";
+
+  textVariant?:
+    | "pali-primary-foreground"
+    | "pali-secondary-foreground"
+    | "pali-accent-foreground"
+    | "pali-destructive-foreground"
+    | "default"
+    | "light"
+    | "dark";
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
   className?: string;
@@ -25,70 +31,62 @@ type CustomButtonProps = {
 export default function CustomButton({
   onPress,
   title,
-  bgVariant = "primary",
-  textVariant = "default",
+  bgVariant = "pali-primary",
+  textVariant = "pali-primary-foreground",
   iconLeft,
   iconRight,
   className = "",
   disabled = false,
   ...props
 }: CustomButtonProps) {
-  const colorMap: Record<string, string> = {
-    primary: "#0286ff",
-    secondary: "#e2e8f0",
-    success: "#28a745",
-    info: "#17a2b8",
-    warning: "#ffc107",
-    danger: "#dc3545",
-    ghost: "transparent",
-    link: "transparent",
-    outline: "transparent",
+  const bgClassMap: Record<string, string> = {
+    "pali-primary": "bg-pali-primary",
+    "pali-secondary": "bg-pali-secondary",
+    "pali-accent": "bg-pali-accent",
+    "pali-destructive": "bg-pali-destructive",
+    "pali-ghost": "bg-transparent",
+    "pali-outline": "bg-transparent",
+    "hero-gradient": "bg-gradient-to-r from-primary to-secondary text-white shadow-m hover:scale-105 transition-all v"
   };
 
-  const textColorMap: Record<string, string> = {
-    default:
-      bgVariant === "ghost" || bgVariant === "link" || bgVariant === "outline"
-        ? "#0286ff"
-        : bgVariant === "secondary"
-        ? "#1f2937"
-        : "#ffffff",
-    light: "#f9f9f9",
-    dark: "#000000",
+  const textClassMap: Record<string, string> = {
+    "pali-primary-foreground": "text-pali-primary-foreground",
+    "pali-secondary-foreground": "text-pali-secondary-foreground",
+    "pali-accent-foreground": "text-pali-accent-foreground",
+    "pali-destructive-foreground": "text-pali-destructive-foreground",
+    default: "text-white",
+    light: "text-white",
+    dark: "text-black",
   };
 
-  const borderColorMap: Record<string, string> = {
-    ghost: "#0286ff",
-    link: "transparent",
-    outline: "#0286ff",
+  const borderClassMap: Record<string, string> = {
+    "pali-ghost": "border-2 border-pali-primary",
+    "pali-outline": "border-2 border-pali-primary",
   };
+
+  const bgClass = disabled
+    ? "bg-gray-400"
+    : bgClassMap[bgVariant] ?? "bg-pali-primary";
+  const textClass = textClassMap[textVariant] ?? "text-white";
+  const borderClass = borderClassMap[bgVariant] ?? "";
 
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
       disabled={disabled}
-      className={`w-full p-4 rounded-full flex-row items-center justify-center ${className}`}
-      style={{
-        backgroundColor: disabled ? "#9ca3af" : colorMap[bgVariant] || "#0286ff",
-        borderWidth:
-          bgVariant === "ghost" || bgVariant === "link" || bgVariant === "outline"
-            ? 2
-            : 0,
-        borderColor: borderColorMap[bgVariant] || "transparent",
-        opacity: disabled ? 0.6 : 1,
-      }}
+      className={`w-full p-4 rounded-full flex-row items-center justify-center ${bgClass} ${borderClass} ${className} ${
+        disabled ? "opacity-60" : "opacity-100"
+      }`}
       {...props}
     >
-      {iconLeft && <View className="mr-2 me-2">{iconLeft}</View>}
+      {iconLeft && <View className="mr-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">{iconLeft}</View>}
 
-      <Text
-        className="font-semibold text-lg text-center"
-        style={{ color: textColorMap[textVariant] || "#ffffff" }}
-      >
+      <Text className={`font-semibold text-lg text-center ${textClass}`}>
         {title}
       </Text>
 
-      {iconRight && <View className="ml-2 ms-2">{iconRight}</View>}
+      {iconRight && <View className="ml-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">{iconRight}</View>}
     </TouchableOpacity>
   );
 }
