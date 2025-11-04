@@ -18,15 +18,15 @@ export default function OAuth() {
       <CustomButton
       title="Continue with Google"
       className="mt-5 w-full shadow-none"
-      bgVariant="outline"
+      bgVariant="pali-primary"
       iconLeft={
         <Image
           source={icons.google}
-          className="w-5 h-5 mx-2"
+          className="w-5 h-5 mx-2 me-2"
           resizeMode="contain"
         />
       }
-      textVariant="dark"
+      textVariant="pali-primary-foreground"
       onPress={handleGoogleSignIn}
        />
     </View>

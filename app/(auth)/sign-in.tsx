@@ -56,7 +56,7 @@ export default function SignIn() {
       <View className="flex-1 bg-white">
         <View className="relative mt-1">
           <Image
-            source={images.signUpCar}
+            source={images.bgImage}
             className="z-0 w-full h-[300px] rounded-2xl"
             resizeMode="cover"
           />
@@ -108,8 +108,8 @@ export default function SignIn() {
             <CustomButton
               title={loading ? "Signing In..." : "Sign In"}
               onPress={onSignInPress}
-              bgVariant="primary"
-              textVariant="default"
+              bgVariant="pali-primary"
+              textVariant="pali-primary-foreground"
               disabled={loading}
             />
             {loading && (

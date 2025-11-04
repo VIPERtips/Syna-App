@@ -126,7 +126,7 @@ export default function SignUp() {
       <View className="flex-1 bg-white">
         <View className="relative mt-1">
           <Image
-            source={images.signUpCar}
+            source={images.bgImage}
             className="z-0 w-full h-[300px] rounded-2xl"
             resizeMode="cover"
           />
@@ -183,8 +183,8 @@ export default function SignUp() {
             <CustomButton
               title={loading ? "Processing..." : "Sign Up"}
               onPress={onSignUpPress}
-              bgVariant="primary"
-              textVariant="default"
+              bgVariant="pali-primary"
+              textVariant="pali-primary-foreground"
               disabled={loading}
             />
           </View>
@@ -222,8 +222,8 @@ export default function SignUp() {
                   setVerification((prev) => ({ ...prev, state: "default" }));
                   router.push("/(root)/(tabs)/home");
                 }}
-                bgVariant="primary"
-                textVariant="default"
+                bgVariant="pali-primary"
+                textVariant="pali-primary-foreground"
                 className="w-full mt-5"
               />
             </View>
@@ -274,6 +274,7 @@ export default function SignUp() {
                 title={loading ? "Verifying..." : "Verify Email"}
                 onPress={onVerifyPress}
                 className="mt-5"
+              
                 tone="success"
                 disabled={loading}
               />
