@@ -2,8 +2,9 @@ import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
 import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
-import { useSignIn } from "@clerk/clerk-expo";
+import { useAuth, useSignIn } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -19,40 +20,73 @@ import {
 export default function SignIn() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const { getToken } = useAuth();
+  const { signOut } = useAuth(); 
 
+
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onSignInPress = async () => {
-    if (!isLoaded) return;
-    setLoading(true);
-    try {
-      const signInAttempt = await signIn.create({
-        identifier: form.email,
-        password: form.password,
-      });
+  if (!isLoaded) return;
+  setLoading(true);
 
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
-        router.push("/(root)/(tabs)/home");
-      } else {
-        Alert.alert("Error", "Sign in failed. Please try again.");
-      }
-    } catch (err: any) {
-      Alert.alert(
-        "Error",
-        err.errors?.[0]?.longMessage || "An error occurred during sign in"
+  try {
+    const signInAttempt = await signIn.create({
+      identifier: form.email,
+      password: form.password,
+    });
+
+    if (signInAttempt.status === "complete") {
+      await setActive({ session: signInAttempt.createdSessionId });
+
+      const token = await getToken();
+      console.log("Clerk JWT:", token);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-    } finally {
-      setLoading(false);
+
+      const data = await response.json();
+      console.log("Backend response:", data);
+
+      // Check if backend returned essential data
+      if (!response.ok || !data?.data?.role) {
+        Alert.alert(
+          "Login Error",
+          data.message || "Incomplete user data. Signing out..."
+        );
+        await signOut(); 
+        return;
+      }
+
+      // Store user role locally for app access control
+      await AsyncStorage.setItem("userRole", data.data.role);
+
+      // Navigate to home
+      router.push("/(root)/(tabs)/home");
+    } else {
+      Alert.alert("Error", "Sign in incomplete");
     }
-  };
+  } catch (err: any) {
+    Alert.alert("Sign In Error", err.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
-    <ScrollView className="flex-1 bg-white ">
+    <ScrollView className="flex-1 bg-white">
       <View className="flex-1 bg-white">
         <View className="relative mt-1">
           <Image
@@ -65,10 +99,11 @@ export default function SignIn() {
               Hey, you made it!
             </Text>
             <Text className="text-base text-gray-700 mt-1">
-              Let’s get you rolling with AftaBus 👀
+              Let’s get you rolling with Syna 👀
             </Text>
           </View>
         </View>
+
         <View className="p-5">
           <InputField
             label="Email Address"
@@ -99,7 +134,6 @@ export default function SignIn() {
                 name={showPassword ? "eye-off" : "eye"}
                 size={22}
                 color="gray"
-                className="w-5 h-5 opacity-70 "
               />
             </TouchableOpacity>
           </View>
@@ -113,20 +147,16 @@ export default function SignIn() {
               disabled={loading}
             />
             {loading && (
-              <ActivityIndicator
-                size="large"
-                color="#0286ff"
-                className="mt-4"
-              />
+              <ActivityIndicator size="large" color="#0286ff" className="mt-4" />
             )}
           </View>
+
           <OAuth />
         </View>
       </View>
+
       <View className="flex-row justify-center mt-5">
-        <Text className="text-gray-500 text-[14px]">
-          Don't have an account?{" "}
-        </Text>
+        <Text className="text-gray-500 text-[14px]">Don't have an account? </Text>
         <Link
           href="/(auth)/sign-up"
           className="text-primary-500 font-JakartaSemiBold text-[14px]"

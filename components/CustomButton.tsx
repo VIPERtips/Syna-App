@@ -12,15 +12,6 @@ type CustomButtonProps = {
     | "pali-ghost"
     | "pali-outline"
     | "hero-gradient";
-
-  textVariant?:
-    | "pali-primary-foreground"
-    | "pali-secondary-foreground"
-    | "pali-accent-foreground"
-    | "pali-destructive-foreground"
-    | "default"
-    | "light"
-    | "dark";
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
   className?: string;
@@ -32,7 +23,6 @@ export default function CustomButton({
   onPress,
   title,
   bgVariant = "pali-primary",
-  textVariant = "pali-primary-foreground",
   iconLeft,
   iconRight,
   className = "",
@@ -46,17 +36,7 @@ export default function CustomButton({
     "pali-destructive": "bg-pali-destructive",
     "pali-ghost": "bg-transparent",
     "pali-outline": "bg-transparent",
-    "hero-gradient": "bg-gradient-to-r from-primary to-secondary text-white shadow-m hover:scale-105 transition-all v"
-  };
-
-  const textClassMap: Record<string, string> = {
-    "pali-primary-foreground": "text-pali-primary-foreground",
-    "pali-secondary-foreground": "text-pali-secondary-foreground",
-    "pali-accent-foreground": "text-pali-accent-foreground",
-    "pali-destructive-foreground": "text-pali-destructive-foreground",
-    default: "text-white",
-    light: "text-white",
-    dark: "text-black",
+    "hero-gradient": "bg-gradient-to-r from-primary to-secondary shadow-m hover:scale-105 transition-all",
   };
 
   const borderClassMap: Record<string, string> = {
@@ -67,7 +47,6 @@ export default function CustomButton({
   const bgClass = disabled
     ? "bg-gray-400"
     : bgClassMap[bgVariant] ?? "bg-pali-primary";
-  const textClass = textClassMap[textVariant] ?? "text-white";
   const borderClass = borderClassMap[bgVariant] ?? "";
 
   return (
@@ -80,13 +59,21 @@ export default function CustomButton({
       }`}
       {...props}
     >
-      {iconLeft && <View className="mr-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">{iconLeft}</View>}
+      {iconLeft && (
+        <View className="mr-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">
+          {iconLeft}
+        </View>
+      )}
 
-      <Text className={`font-semibold text-lg text-center ${textClass}`}>
+      <Text className="font-semibold text-lg text-center text-white me-2">
         {title}
       </Text>
 
-      {iconRight && <View className="ml-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">{iconRight}</View>}
+      {iconRight && (
+        <View className="ml-2 shadow-md hover:shadow-lg hover:scale-105 transition-all">
+          {iconRight}
+        </View>
+      )}
     </TouchableOpacity>
   );
 }

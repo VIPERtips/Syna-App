@@ -10,11 +10,13 @@ import eyecross from "@/assets/icons/eyecross.png";
 import google from "@/assets/icons/google.png";
 import home from "@/assets/icons/home.png";
 import list from "@/assets/icons/list.png";
+import location from "@/assets/icons/location.png";
 import lock from "@/assets/icons/lock.png";
 import map from "@/assets/icons/map.png";
 import marker from "@/assets/icons/marker.png";
 import out from "@/assets/icons/out.png";
 import person from "@/assets/icons/person.png";
+import phone from "@/assets/icons/phone.png";
 import pin from "@/assets/icons/pin.png";
 import point from "@/assets/icons/point.png";
 import profile from "@/assets/icons/profile.png";
@@ -25,8 +27,8 @@ import target from "@/assets/icons/target.png";
 import to from "@/assets/icons/to.png";
 import bgImage from "@/assets/images/bgImage.png";
 import check from "@/assets/images/check.png";
-import getStarted from "@/assets/images/get-started.png";
 import message from "@/assets/images/message.png";
+
 import noResult from "@/assets/images/no-result.png";
 import onboarding1 from "@/assets/images/onboarding1.png";
 import onboarding2 from "@/assets/images/onboarding2.png";
@@ -36,7 +38,6 @@ export const images = {
     onboarding1,
     onboarding2,
     onboarding3,
-    getStarted,
     bgImage,
     check,
     noResult,
@@ -69,6 +70,8 @@ export const icons = {
     star,
     target,
     to,
+    phone,
+    location
 };
 
 
@@ -77,22 +80,22 @@ export const onboarding = [
     id: 1,
     image: images.onboarding1,
     title: "Skip the Queues, Get Care Now",
-    description: "Book doctor appointments in seconds, not hours. Real healthcare for the digital generation.",
-    features: ["Instant booking", "Zero paperwork", "Price transparency"],
+    description: "Book doctor appointments in seconds, avoid long waits at clinics. Real healthcare, zero stress.",
+    features: ["Instant booking", "No paperwork", "Affordable local pricing"],
   },
   {
     id: 2,
     image: images.onboarding2,
     title: "Your Health, Your Control",
-    description: "Secure chats with doctors, prescription tracking, and health history that travels with you.",
+    description: "Secure chats with local doctors, track prescriptions, and store your health history safely.",
     features: ["Encrypted messaging", "Digital prescriptions", "Health timeline"],
   },
   {
     id: 3,
     image: images.onboarding3,
-    title: "Built for Africa, Loved by Gen Z",
-    description: "From Harare to Lagos, we're making quality healthcare accessible to everyone.",
-    features: ["Multi-currency payments", "Local language support", "African doctor network"],
+    title: "Built for Zimbabwe, Loved by You",
+    description: "From Harare to Bulawayo, Syna makes quality healthcare accessible and simple for everyone.",
+    features: ["Local payment options", "Shona & Ndebele support", "Trusted Zimbabwean doctors"],
   },
 ];
 

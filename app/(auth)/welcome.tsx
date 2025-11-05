@@ -85,12 +85,11 @@ export default function Onboarding() {
       </Swiper>
 
     
-      <View className="w-full px-8 pb-10 mt-4">
+      <View className="w-full px-8 pb-10 mt-4 text-white">
         <CustomButton
           title={activeIndex === onboarding.length - 1 ? "Get Started" : "Next"}
           onPress={handleNext}
           bgVariant="pali-primary"
-          textVariant="pali-primary-foreground"
            iconRight={<Ionicons name="arrow-forward" size={20} color="white" />}
         />
       </View>
