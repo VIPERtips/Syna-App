@@ -1,6 +1,8 @@
+import HealthTipsCarousel from "@/components/HealthTipsCarousel";
 import QuickActionCard from "@/components/QuickActionCard";
 import { icons } from "@/constants"; // adjust to your icons folder
 import { useAuth, useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -59,44 +61,115 @@ export default function Home() {
 
   return (
     <SafeAreaView className="bg-pali-background flex-1">
-      <FlatList
-        data={quickActions}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={3}
-        columnWrapperStyle={{ justifyContent: "space-between", gap: 10, marginBottom: 5, borderRadius: 50 }}
-        renderItem={({ item }) => (
-          <QuickActionCard
-            item={item}
-            onPress={() => router.push("/")}
-          />
-        )}
-        contentContainerStyle={{
-          paddingBottom: 40,
-          paddingHorizontal: 10,
-        }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={() => (
-          <View className="flex flex-row items-center justify-between px-5 mt-5 mb-7">
-            <View>
-              <Text className="text-2xl font-JakartaExtraBold">
-                Welcome,{" "}
-                <Text className="text-pali-secondary">{capitalizedDisplayName}</Text> 👋
-              </Text>
-              <Text className="text-sm text-gray-400 mt-1 font-JakartaBold leading-tight">
-                Linked. Synced. Sorted.
-              </Text>
-            </View>
+  
+  <View className="px-6 pt-4 pb-6">
+    <View className="flex-row items-center justify-between">
+      
+      <View className="flex-1">
+        <Text className="text-3xl font-JakartaExtraBold leading-tight">
+          Welcome,{" "}
+          <Text className="text-pali-secondary">{capitalizedDisplayName}</Text>
+        </Text>
+        <View className="flex-row items-center mt-2">
+          <View className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse mr-2" />
+          <Text className="text-sm text-gray-400 font-JakartaSemiBold">
+            Linked. Synced. Sorted.
+          </Text>
+        </View>
+      </View>
 
-            <TouchableOpacity
-              onPress={handleSignOut}
-              className="justify-center items-center h-10 w-10 rounded-full bg-white/10 border border-white/20"
-            >
-              <Image source={icons.out} className="w-5 h-5" />
-            </TouchableOpacity>
-          </View>
-        )}
+     
+      <TouchableOpacity
+        onPress={handleSignOut}
+        className="justify-center items-center h-12 w-12 rounded-[18px] bg-white/8 border border-white/10"
+        activeOpacity={0.7}
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
+      >
+        <Image source={icons.out} className="w-5 h-5" tintColor="black" />
+      </TouchableOpacity>
+    </View>
+
+    
+    <View className="flex-row mt-6 space-x-3">
+      <View 
+        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <Text className="text-gray-400 text-xs font-JakartaSemiBold">Today</Text>
+        <Text className="text-pali-popover-foreground text-xl font-JakartaBold mt-1">3 Tasks</Text>
+      </View>
+      
+      <View 
+        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <Text className="text-gray-400 text-xs font-JakartaSemiBold">Upcoming</Text>
+        <Text className="text-pali-popover-foreground text-xl font-JakartaBold mt-1">12 Events</Text>
+      </View>
+    </View>
+  </View>
+
+  {/* Scrollable Content */}
+  <FlatList
+    data={quickActions}
+    keyExtractor={(item) => item.id.toString()}
+    numColumns={3}
+    columnWrapperStyle={{ 
+      gap: 12,
+      paddingHorizontal: 20,
+      marginBottom: 12,
+    }}
+    renderItem={({ item }) => (
+      <QuickActionCard
+        item={item}
+        onPress={() => router.push("/")}
       />
-    </SafeAreaView>
+    )}
+    contentContainerStyle={{
+      paddingTop: 8,
+      paddingBottom: 40,
+    }}
+    showsVerticalScrollIndicator={false}
+    keyboardShouldPersistTaps="handled"
+    ListHeaderComponent={() => (
+      <View className="px-6 mb-5 mt-2">
+        <Text className="text-xl font-JakartaBold text-pali-foreground">
+          Quick Actions
+        </Text>
+        <Text className="text-sm text-gray-400 font-JakartaMedium mt-1">
+          Choose an action to get started
+        </Text>
+      </View>
+    )}
+    ListFooterComponent={() => (
+      <View className="px-6 mt-8">
+       
+       <View className="mb-6">
+        Show arrays of doctors available
+       </View>
+
+        <HealthTipsCarousel />
+      </View>
+    )}
+  />
+</SafeAreaView>
   );
 }
