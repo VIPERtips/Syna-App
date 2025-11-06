@@ -29,12 +29,12 @@ export default function QuickActionCard({ item, onPress }: any) {
         <View
           className="p-5 rounded-3xl mb-4"
           style={{
-            backgroundColor: item.color + "20",
             shadowColor: item.color,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 4,
+            backgroundColor: "#fff"
             
           }}
         >

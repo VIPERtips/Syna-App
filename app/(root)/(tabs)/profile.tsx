@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from "react";
+import Map from "@/components/Map";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -9,17 +13,23 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth, useUser } from "@clerk/clerk-expo";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function Profile() {
   const { user } = useUser();
   const { signOut } = useAuth();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [docName, setDocName] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [clinic, setClinic] = useState("");
   const [userType, setUserType] = useState("patient");
+  const [fetchedUser, setFetchedUser] = useState<any>("");
+  const [form, setForm] = useState({
+    fullName: "",
+    specialty: "",
+    bio: "",
+    education: "",
+    address: "",
+    latitude: "",
+    longitude: "",
+    rating: 0,
+  });
 
   const fetchUser = async () => {
     try {
@@ -34,46 +44,29 @@ export default function Profile() {
       );
 
       const data = await response.json();
-      console.log("Backend response:", data);
+      setFetchedUser(data?.data);
     } catch (error) {
       console.error("Error logging in:", error);
     }
   };
 
-  const testUser = {
-    firstName: "Blessed",
-    lastName: "Tadiwa",
-    phone: "+263 789 773 911",
-    email: "blessed.tadiwa@email.com",
-    location: "Harare, Zimbabwe",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    // Doctor specific
-    specialty: "General Practitioner",
-    clinic: "Harare Medical Centre",
-    experience: "8 years",
-    license: "ZIM-MED-12345",
-    // Patient specific
-    bloodType: "O+",
-    dateOfBirth: "15 March 1990",
-  };
+  const fullName = user?.firstName + " " + user?.lastName;
 
   const toggleModal = () => setModalVisible(!isModalVisible);
 
   const submitDoctorRequest = () => {
-    console.log({ docName, specialty, clinic });
+  console.log(form);
     setModalVisible(false);
   };
 
   useEffect(() => {
     fetchUser();
-    console.log("calling");
   }, []);
 
-  // Render Patient Profile
   const renderPatientProfile = () => (
     <>
       <LinearGradient
-        colors={["#14b8a6", "#0f766e"]} // from-teal-500 to-teal-600
+        colors={["#14b8a6", "#0f766e"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -101,7 +94,6 @@ export default function Profile() {
           </View>
         </View>
       </LinearGradient>
-
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
         <Text className="text-gray-900 text-lg font-bold mb-4">
           Your Health Journey
@@ -123,7 +115,6 @@ export default function Profile() {
           </View>
         </View>
       </View>
-
       {/* Personal Information */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
         <Text className="text-gray-900 text-lg font-bold mb-4">
@@ -139,15 +130,18 @@ export default function Profile() {
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Phone Number</Text>
-          <Text className="text-gray-900 text-base">{user?.phone}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.phoneNumber}
+          </Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Location</Text>
-          <Text className="text-gray-900 text-base">{user?.id}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.location}
+          </Text>
         </View>
       </View>
-
       {/* Medical History */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
         <Text className="text-gray-900 text-lg font-bold mb-4">
@@ -173,7 +167,6 @@ export default function Profile() {
           <Text className="text-gray-600 text-sm">Hypertension</Text>
         </View>
       </View>
-
       {/* Recent Appointments */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
         <Text className="text-gray-900 text-lg font-bold mb-4">
@@ -204,43 +197,41 @@ export default function Profile() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Upgrade to Doctor */}
-      <TouchableOpacity
-        onPress={toggleModal}
-        className="bg-gradient-to-r from-teal-600 to-teal-700 w-full rounded-3xl p-6 mb-4 shadow-lg"
-        activeOpacity={0.9}
+      <LinearGradient
+        colors={["#14B8A6", "#0F766E"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{
+          borderRadius: 24,
+        }}
+        className="w-full rounded-3xl mb-4 shadow-lg"
       >
-        <Text className="text-white text-lg font-bold">Are you a Doctor?</Text>
-        <Text className="text-teal-100 text-sm mt-1">
-          Request a doctor account to start accepting patients
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={toggleModal}
+          activeOpacity={0.9}
+          className="p-6"
+        >
+          <Text className="text-white text-lg font-bold">
+            Are you a Doctor?
+          </Text>
+          <Text className="text-teal-100 text-sm mt-1">
+            Request a doctor account to start accepting patients
+          </Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
-      {/* Settings Options */}
       <View className="bg-white w-full rounded-3xl p-6 mb-6 shadow-lg">
-        <TouchableOpacity className="py-4 border-b border-gray-100">
-          <Text className="text-gray-900 font-semibold">Edit Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="py-4 border-b border-gray-100">
-          <Text className="text-gray-900 font-semibold">Privacy Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="py-4 border-b border-gray-100">
-          <Text className="text-gray-900 font-semibold">Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="py-4">
+        <TouchableOpacity onPress={handleSignOut} className="py-4">
           <Text className="text-red-600 font-semibold">Logout</Text>
         </TouchableOpacity>
       </View>
     </>
   );
 
-  // Render Doctor Profile
   const renderDoctorProfile = () => (
     <>
-      {/* Header Card */}
       <LinearGradient
-        colors={["#14b8a6", "#0f766e"]} // from-teal-500 to-teal-600
+        colors={["#14b8a6", "#0f766e"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -264,15 +255,19 @@ export default function Profile() {
             <Text className="text-white text-2xl font-bold">
               Dr. {user?.firstName} {user?.lastName}
             </Text>
-            <Text className="text-blue-100 text-sm mt-1">{user.specialty}</Text>
+            <Text className="text-blue-100 text-sm mt-1">
+              {fetchedUser?.specialty || "N/A"}
+            </Text>
             <View className="flex-row items-center mt-2">
               <View className="bg-white/20 px-3 py-1 rounded-full mr-2">
                 <Text className="text-white text-xs font-medium">
-                  {user.experience}
+                  {fetchedUser?.experience || "N/A"}
                 </Text>
               </View>
               <View className="bg-white/20 px-3 py-1 rounded-full">
-                <Text className="text-white text-xs font-medium">⭐ 4.8</Text>
+                <Text className="text-white text-xs font-medium">
+                  ⭐ {fetchedUser?.avgRating || "0.0"}
+                </Text>
               </View>
             </View>
           </View>
@@ -286,23 +281,22 @@ export default function Profile() {
         </Text>
         <View className="flex-row justify-between">
           <View className="items-center flex-1">
-            <Text className="text-3xl font-bold text-blue-600">247</Text>
+            <Text className="text-3xl font-bold text-green-600">247</Text>
             <Text className="text-gray-600 text-xs mt-1">Patients</Text>
           </View>
           <View className="w-px bg-gray-200" />
           <View className="items-center flex-1">
-            <Text className="text-3xl font-bold text-blue-600">89</Text>
+            <Text className="text-3xl font-bold text-green-600">89</Text>
             <Text className="text-gray-600 text-xs mt-1">This Month</Text>
           </View>
           <View className="w-px bg-gray-200" />
           <View className="items-center flex-1">
-            <Text className="text-3xl font-bold text-blue-600">156</Text>
+            <Text className="text-3xl font-bold text-green-600">156</Text>
             <Text className="text-gray-600 text-xs mt-1">Reviews</Text>
           </View>
         </View>
       </View>
 
-      {/* Professional Information */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
         <Text className="text-gray-900 text-lg font-bold mb-4">
           Professional Information
@@ -310,34 +304,42 @@ export default function Profile() {
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Specialty</Text>
-          <Text className="text-gray-900 text-base">{user.specialty}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.specialty}
+          </Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Primary Clinic</Text>
-          <Text className="text-gray-900 text-base">{user.clinic}</Text>
+          <Text className="text-gray-900 text-base">{fetchedUser?.clinic}</Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Medical License</Text>
-          <Text className="text-gray-900 text-base">{user.license}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.license}
+          </Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">
             Years of Experience
           </Text>
-          <Text className="text-gray-900 text-base">{user.experience}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.experience}
+          </Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Phone</Text>
-          <Text className="text-gray-900 text-base">{user.phone}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.phoneNumber}
+          </Text>
         </View>
 
         <View>
           <Text className="text-gray-500 text-xs mb-1">Email</Text>
-          <Text className="text-gray-900 text-base">{user.email}</Text>
+          <Text className="text-gray-900 text-base">{fetchedUser?.email}</Text>
         </View>
       </View>
 
@@ -367,7 +369,7 @@ export default function Profile() {
         </View>
 
         <TouchableOpacity className="bg-blue-50 rounded-xl p-3 items-center">
-          <Text className="text-blue-600 font-semibold">Manage Schedule</Text>
+          <Text className="text-green-600 font-semibold">Manage Schedule</Text>
         </TouchableOpacity>
       </View>
 
@@ -384,11 +386,11 @@ export default function Profile() {
               <Text className="text-gray-600 text-sm">
                 General Consultation
               </Text>
-              <Text className="text-blue-600 text-xs mt-1">
+              <Text className="text-green-600 text-xs mt-1">
                 10:00 AM - 10:30 AM
               </Text>
             </View>
-            <TouchableOpacity className="bg-blue-600 px-4 py-2 rounded-xl">
+            <TouchableOpacity className="bg-green-600 px-4 py-2 rounded-xl">
               <Text className="text-white text-xs font-semibold">Start</Text>
             </TouchableOpacity>
           </View>
@@ -412,43 +414,8 @@ export default function Profile() {
         </View>
 
         <TouchableOpacity className="mt-2">
-          <Text className="text-blue-600 font-semibold text-center">
+          <Text className="text-green-600 font-semibold text-center">
             View Full Schedule →
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Recent Reviews */}
-      <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">
-          Recent Reviews
-        </Text>
-
-        <View className="mb-4 pb-4 border-b border-gray-100">
-          <View className="flex-row items-center mb-2">
-            <Text className="text-gray-900 font-semibold">Patient #1247</Text>
-            <Text className="text-yellow-500 ml-2">⭐⭐⭐⭐⭐</Text>
-          </View>
-          <Text className="text-gray-600 text-sm">
-            "Very professional and caring. Explained everything clearly."
-          </Text>
-          <Text className="text-gray-400 text-xs mt-1">2 days ago</Text>
-        </View>
-
-        <View className="mb-4">
-          <View className="flex-row items-center mb-2">
-            <Text className="text-gray-900 font-semibold">Patient #1198</Text>
-            <Text className="text-yellow-500 ml-2">⭐⭐⭐⭐⭐</Text>
-          </View>
-          <Text className="text-gray-600 text-sm">
-            "Best doctor I've had. Takes time to listen and understand."
-          </Text>
-          <Text className="text-gray-400 text-xs mt-1">1 week ago</Text>
-        </View>
-
-        <TouchableOpacity className="mt-2">
-          <Text className="text-blue-600 font-semibold text-center">
-            View All Reviews →
           </Text>
         </TouchableOpacity>
       </View>
@@ -459,17 +426,23 @@ export default function Profile() {
           <Text className="text-gray-900 font-semibold">Edit Profile</Text>
         </TouchableOpacity>
         <TouchableOpacity className="py-4 border-b border-gray-100">
-          <Text className="text-gray-900 font-semibold">Practice Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="py-4 border-b border-gray-100">
           <Text className="text-gray-900 font-semibold">Notifications</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="py-4">
+        <TouchableOpacity onPress={handleSignOut} className="py-4">
           <Text className="text-red-600 font-semibold">Logout</Text>
         </TouchableOpacity>
       </View>
     </>
   );
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push("/(auth)/sign-in");
+    } catch (err) {
+      console.log("Sign out failed:", err);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -500,7 +473,7 @@ export default function Profile() {
           <TouchableOpacity
             onPress={() => setUserType("doctor")}
             className={`flex-1 py-3 rounded-xl ${
-              userType === "doctor" ? "bg-blue-600" : "bg-transparent"
+              userType === "doctor" ? "bg-green-600" : "bg-transparent"
             }`}
           >
             <Text
@@ -518,11 +491,10 @@ export default function Profile() {
           : renderDoctorProfile()}
       </ScrollView>
 
-      {/* Doctor Request Modal */}
       <Modal
-        isVisible={isModalVisible}
+        isVisible={!isModalVisible}
         onBackdropPress={toggleModal}
-        style={{ justifyContent: "flex-end", margin: 0 }}
+        style={{ justifyContent: "flex-end", margin: 0, height: 720 }}
         animationIn="slideInUp"
         animationOut="slideOutDown"
       >
@@ -538,29 +510,61 @@ export default function Profile() {
 
           <Text className="text-gray-700 font-semibold mb-2">Full Name</Text>
           <TextInput
-            placeholder="Dr. John Doe"
+            placeholder="Tadiwa Blessed"
             className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-4 text-base"
-            value={docName}
-            onChangeText={setDocName}
+            value={fullName}
+            onChangeText={(val) => setForm({ ...form, fullName: val })}
           />
 
           <Text className="text-gray-700 font-semibold mb-2">Specialty</Text>
           <TextInput
             placeholder="General Practitioner"
             className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-4 text-base"
-            value={specialty}
-            onChangeText={setSpecialty}
+            value={form.specialty}
+            onChangeText={(val) => setForm({ ...form, specialty: val })}
+          />
+
+          {/* Bio */}
+          <Text className="text-gray-700 font-semibold mb-2">Short Bio</Text>
+          <TextInput
+            placeholder="A short description about yourself"
+            className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-4 text-base"
+            value={form.bio}
+            onChangeText={(val) => setForm({ ...form, bio: val })}
+            multiline={true}
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+
+          {/* Education */}
+          <Text className="text-gray-700 font-semibold mb-2">Education</Text>
+          <TextInput
+            placeholder="Medical School / University"
+            className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-4 text-base"
+            value={form.education}
+            onChangeText={(val) => setForm({ ...form, education: val })}
           />
 
           <Text className="text-gray-700 font-semibold mb-2">
-            Clinic / Hospital
+            Clinic Location
           </Text>
-          <TextInput
-            placeholder="City Clinic, Harare"
-            className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-6 text-base"
-            value={clinic}
-            onChangeText={setClinic}
-          />
+          <View className="bg-gray-100 rounded-2xl overflow-hidden mb-3 self-center">
+            <View style={{ width: 350, height: 250, borderRadius: 16 }}>
+              <Map
+                onLocationSelect={({ latitude, longitude, address }) =>
+                  setForm({
+                    ...form,
+                    latitude: latitude.toString(),
+                    longitude: longitude.toString(),
+                    address,
+                  })
+                }
+              />
+            </View>
+          </View>
+          <Text className="text-gray-500 text-sm mb-6">
+            Tap on the map to select your clinic location
+          </Text>
 
           <TouchableOpacity
             onPress={submitDoctorRequest}
@@ -572,6 +576,7 @@ export default function Profile() {
             </Text>
           </TouchableOpacity>
 
+          {/* Cancel Button */}
           <TouchableOpacity onPress={toggleModal} className="py-3 items-center">
             <Text className="text-gray-500 font-medium">Cancel</Text>
           </TouchableOpacity>
