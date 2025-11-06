@@ -5,7 +5,6 @@ import PatientScheduled from "@/components/PatientScheduled";
 import QuickActionCard from "@/components/QuickActionCard";
 import { icons } from "@/constants";
 import { useAuth, useUser } from "@clerk/clerk-expo";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
@@ -15,10 +14,9 @@ export default function Home() {
   const { user } = useUser();
   const { signOut } = useAuth();
   
-  // Set user role - in production, get this from user metadata or database
   const [userRole, setUserRole] = useState<"patient" | "doctor">("patient");
 
-  // Patient Quick Actions
+
   const patientActions = [
     {
       id: "book",
@@ -248,13 +246,14 @@ export default function Home() {
   const renderDoctorStats = () => (
     <View className="flex-row mt-6 space-x-3">
       <View 
-        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10"
+        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 me-2"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 3,
+           backgroundColor: "white",
         }}
       >
         <Text className="text-gray-400 text-xs font-JakartaSemiBold">Today</Text>
@@ -271,6 +270,7 @@ export default function Home() {
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 3,
+           backgroundColor: "white",
         }}
       >
         <Text className="text-gray-400 text-xs font-JakartaSemiBold">This Week</Text>
@@ -283,13 +283,14 @@ export default function Home() {
   const renderPatientStats = () => (
     <View className="flex-row mt-6 space-x-3">
       <View 
-        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10"
+        className="flex-1 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 me-2"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 3,
+          backgroundColor: "white",
         }}
       >
         <Text className="text-gray-400 text-xs font-JakartaSemiBold">Upcoming</Text>
@@ -304,6 +305,7 @@ export default function Home() {
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 3,
+          backgroundColor: "white",
         }}
       >
         <Text className="text-gray-400 text-xs font-JakartaSemiBold">Completed</Text>
@@ -416,7 +418,7 @@ export default function Home() {
           </View>
         )}
         ListFooterComponent={() => (
-          <View className="px-6 mt-8">
+          <View className="px-6 mt-8" >
             {userRole === "patient" ? renderDoctorsSection() : renderPatientsSection()}
             <HealthTipsCarousel />
           </View>

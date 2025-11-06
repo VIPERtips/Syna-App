@@ -2,6 +2,7 @@ import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
 import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
+import { fetchAPI } from "@/lib/fetch";
 import { useAuth, useSignIn } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -44,7 +45,9 @@ export default function SignIn() {
       const token = await getToken();
       console.log("Clerk JWT:", token);
 
-      const response = await fetch(
+      console.log("hey")
+
+      const response = await fetchAPI(
         `${process.env.EXPO_PUBLIC_SERVER_URL}/api/users/login`,
         {
           method: "POST",

@@ -1,16 +1,46 @@
-import React, { useState } from "react";
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Modal from "react-native-modal";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Profile() {
+  const { user } = useUser();
+  const { signOut } = useAuth();
   const [isModalVisible, setModalVisible] = useState(false);
   const [docName, setDocName] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [clinic, setClinic] = useState("");
-  const [userType, setUserType] = useState("patient"); // "patient" or "doctor"
+  const [userType, setUserType] = useState("patient");
 
-  const user = {
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/users/current?clerkUserId=${user?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      console.log("Backend response:", data);
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const testUser = {
     firstName: "Blessed",
     lastName: "Tadiwa",
     phone: "+263 789 773 911",
@@ -34,33 +64,48 @@ export default function Profile() {
     setModalVisible(false);
   };
 
+  useEffect(() => {
+    fetchUser();
+    console.log("calling");
+  }, []);
+
   // Render Patient Profile
   const renderPatientProfile = () => (
     <>
-      {/* Header Card */}
-      <View className="bg-gradient-to-br from-teal-500 to-teal-600 w-full rounded-3xl p-8 mb-4 shadow-xl">
+      <LinearGradient
+        colors={["#14b8a6", "#0f766e"]} // from-teal-500 to-teal-600
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          width: "100%",
+          borderRadius: 24,
+          padding: 32,
+          marginBottom: 16,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
+      >
         <View className="flex-row items-center">
           <Image
-            source={{ uri: user.avatar }}
-            className="w-24 h-24 rounded-full border-4 border-white"
+            source={{ uri: user?.imageUrl }}
+            style={{ width: 56, height: 56, borderRadius: 28, marginEnd: 5 }}
           />
           <View className="ml-5 flex-1">
             <Text className="text-white text-2xl font-bold">
-              {user.firstName} {user.lastName}
+              {user?.firstName} {user?.lastName}
             </Text>
             <Text className="text-teal-100 text-sm mt-1">Patient Account</Text>
-            <View className="flex-row items-center mt-2">
-              <View className="bg-white/20 px-3 py-1 rounded-full">
-                <Text className="text-white text-xs font-medium">{user.bloodType}</Text>
-              </View>
-            </View>
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
-      {/* Quick Stats */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Your Health Journey</Text>
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Your Health Journey
+        </Text>
         <View className="flex-row justify-between">
           <View className="items-center flex-1">
             <Text className="text-3xl font-bold text-teal-600">12</Text>
@@ -81,72 +126,82 @@ export default function Profile() {
 
       {/* Personal Information */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Personal Information</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Personal Information
+        </Text>
+
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Email Address</Text>
-          <Text className="text-gray-900 text-base">{user.email}</Text>
+          <Text className="text-gray-900 text-base">
+            {user?.emailAddresses[0].emailAddress}
+          </Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Phone Number</Text>
-          <Text className="text-gray-900 text-base">{user.phone}</Text>
+          <Text className="text-gray-900 text-base">{user?.phone}</Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Location</Text>
-          <Text className="text-gray-900 text-base">{user.location}</Text>
-        </View>
-
-        <View className="mb-4">
-          <Text className="text-gray-500 text-xs mb-1">Date of Birth</Text>
-          <Text className="text-gray-900 text-base">{user.dateOfBirth}</Text>
-        </View>
-
-        <View>
-          <Text className="text-gray-500 text-xs mb-1">Blood Type</Text>
-          <Text className="text-gray-900 text-base">{user.bloodType}</Text>
+          <Text className="text-gray-900 text-base">{user?.id}</Text>
         </View>
       </View>
 
       {/* Medical History */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Medical History</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Medical History
+        </Text>
+
         <View className="bg-gray-50 rounded-2xl p-4 mb-3">
           <Text className="text-gray-900 font-semibold mb-1">Allergies</Text>
           <Text className="text-gray-600 text-sm">Penicillin, Pollen</Text>
         </View>
 
         <View className="bg-gray-50 rounded-2xl p-4 mb-3">
-          <Text className="text-gray-900 font-semibold mb-1">Current Medications</Text>
+          <Text className="text-gray-900 font-semibold mb-1">
+            Current Medications
+          </Text>
           <Text className="text-gray-600 text-sm">Lisinopril 10mg (Daily)</Text>
         </View>
 
         <View className="bg-gray-50 rounded-2xl p-4">
-          <Text className="text-gray-900 font-semibold mb-1">Chronic Conditions</Text>
+          <Text className="text-gray-900 font-semibold mb-1">
+            Chronic Conditions
+          </Text>
           <Text className="text-gray-600 text-sm">Hypertension</Text>
         </View>
       </View>
 
       {/* Recent Appointments */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Recent Appointments</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Recent Appointments
+        </Text>
+
         <View className="border-l-4 border-teal-500 pl-4 mb-4">
           <Text className="text-gray-900 font-semibold">Dr. Sarah Johnson</Text>
           <Text className="text-gray-600 text-sm">General Checkup</Text>
-          <Text className="text-gray-500 text-xs mt-1">Oct 28, 2025 • 10:00 AM</Text>
+          <Text className="text-gray-500 text-xs mt-1">
+            Oct 28, 2025 • 10:00 AM
+          </Text>
         </View>
 
         <View className="border-l-4 border-gray-300 pl-4 mb-4">
           <Text className="text-gray-900 font-semibold">Dr. Michael Chen</Text>
-          <Text className="text-gray-600 text-sm">Blood Pressure Monitoring</Text>
-          <Text className="text-gray-500 text-xs mt-1">Oct 15, 2025 • 2:30 PM</Text>
+          <Text className="text-gray-600 text-sm">
+            Blood Pressure Monitoring
+          </Text>
+          <Text className="text-gray-500 text-xs mt-1">
+            Oct 15, 2025 • 2:30 PM
+          </Text>
         </View>
 
         <TouchableOpacity className="mt-2">
-          <Text className="text-teal-600 font-semibold text-center">View All Appointments →</Text>
+          <Text className="text-teal-600 font-semibold text-center">
+            View All Appointments →
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -157,7 +212,9 @@ export default function Profile() {
         activeOpacity={0.9}
       >
         <Text className="text-white text-lg font-bold">Are you a Doctor?</Text>
-        <Text className="text-teal-100 text-sm mt-1">Request a doctor account to start accepting patients</Text>
+        <Text className="text-teal-100 text-sm mt-1">
+          Request a doctor account to start accepting patients
+        </Text>
       </TouchableOpacity>
 
       {/* Settings Options */}
@@ -182,20 +239,37 @@ export default function Profile() {
   const renderDoctorProfile = () => (
     <>
       {/* Header Card */}
-      <View className="bg-gradient-to-br from-blue-600 to-blue-700 w-full rounded-3xl p-8 mb-4 shadow-xl">
+      <LinearGradient
+        colors={["#14b8a6", "#0f766e"]} // from-teal-500 to-teal-600
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          width: "100%",
+          borderRadius: 24,
+          padding: 32,
+          marginBottom: 16,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
+      >
         <View className="flex-row items-center">
           <Image
-            source={{ uri: user.avatar }}
+            source={{ uri: user?.imageUrl }}
             className="w-24 h-24 rounded-full border-4 border-white"
           />
           <View className="ml-5 flex-1">
             <Text className="text-white text-2xl font-bold">
-              Dr. {user.firstName} {user.lastName}
+              Dr. {user?.firstName} {user?.lastName}
             </Text>
             <Text className="text-blue-100 text-sm mt-1">{user.specialty}</Text>
             <View className="flex-row items-center mt-2">
               <View className="bg-white/20 px-3 py-1 rounded-full mr-2">
-                <Text className="text-white text-xs font-medium">{user.experience}</Text>
+                <Text className="text-white text-xs font-medium">
+                  {user.experience}
+                </Text>
               </View>
               <View className="bg-white/20 px-3 py-1 rounded-full">
                 <Text className="text-white text-xs font-medium">⭐ 4.8</Text>
@@ -203,11 +277,13 @@ export default function Profile() {
             </View>
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Quick Stats */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Practice Overview</Text>
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Practice Overview
+        </Text>
         <View className="flex-row justify-between">
           <View className="items-center flex-1">
             <Text className="text-3xl font-bold text-blue-600">247</Text>
@@ -228,8 +304,10 @@ export default function Profile() {
 
       {/* Professional Information */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Professional Information</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Professional Information
+        </Text>
+
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Specialty</Text>
           <Text className="text-gray-900 text-base">{user.specialty}</Text>
@@ -246,7 +324,9 @@ export default function Profile() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-gray-500 text-xs mb-1">Years of Experience</Text>
+          <Text className="text-gray-500 text-xs mb-1">
+            Years of Experience
+          </Text>
           <Text className="text-gray-900 text-base">{user.experience}</Text>
         </View>
 
@@ -263,8 +343,10 @@ export default function Profile() {
 
       {/* Availability */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Availability This Week</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Availability This Week
+        </Text>
+
         <View className="flex-row justify-between mb-3">
           <View className="flex-1 bg-green-50 rounded-xl p-3 mr-2">
             <Text className="text-gray-900 font-semibold text-xs">Mon</Text>
@@ -291,14 +373,20 @@ export default function Profile() {
 
       {/* Upcoming Appointments */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Today's Appointments</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Today's Appointments
+        </Text>
+
         <View className="bg-blue-50 rounded-2xl p-4 mb-3">
           <View className="flex-row justify-between items-center">
             <View className="flex-1">
               <Text className="text-gray-900 font-semibold">Tendai Moyo</Text>
-              <Text className="text-gray-600 text-sm">General Consultation</Text>
-              <Text className="text-blue-600 text-xs mt-1">10:00 AM - 10:30 AM</Text>
+              <Text className="text-gray-600 text-sm">
+                General Consultation
+              </Text>
+              <Text className="text-blue-600 text-xs mt-1">
+                10:00 AM - 10:30 AM
+              </Text>
             </View>
             <TouchableOpacity className="bg-blue-600 px-4 py-2 rounded-xl">
               <Text className="text-white text-xs font-semibold">Start</Text>
@@ -311,23 +399,31 @@ export default function Profile() {
             <View className="flex-1">
               <Text className="text-gray-900 font-semibold">Chipo Ndlovu</Text>
               <Text className="text-gray-600 text-sm">Follow-up Visit</Text>
-              <Text className="text-gray-600 text-xs mt-1">11:00 AM - 11:30 AM</Text>
+              <Text className="text-gray-600 text-xs mt-1">
+                11:00 AM - 11:30 AM
+              </Text>
             </View>
             <View className="bg-gray-200 px-4 py-2 rounded-xl">
-              <Text className="text-gray-600 text-xs font-semibold">Upcoming</Text>
+              <Text className="text-gray-600 text-xs font-semibold">
+                Upcoming
+              </Text>
             </View>
           </View>
         </View>
 
         <TouchableOpacity className="mt-2">
-          <Text className="text-blue-600 font-semibold text-center">View Full Schedule →</Text>
+          <Text className="text-blue-600 font-semibold text-center">
+            View Full Schedule →
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Recent Reviews */}
       <View className="bg-white w-full rounded-3xl p-6 mb-4 shadow-lg">
-        <Text className="text-gray-900 text-lg font-bold mb-4">Recent Reviews</Text>
-        
+        <Text className="text-gray-900 text-lg font-bold mb-4">
+          Recent Reviews
+        </Text>
+
         <View className="mb-4 pb-4 border-b border-gray-100">
           <View className="flex-row items-center mb-2">
             <Text className="text-gray-900 font-semibold">Patient #1247</Text>
@@ -351,7 +447,9 @@ export default function Profile() {
         </View>
 
         <TouchableOpacity className="mt-2">
-          <Text className="text-blue-600 font-semibold text-center">View All Reviews →</Text>
+          <Text className="text-blue-600 font-semibold text-center">
+            View All Reviews →
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -375,8 +473,12 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView 
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 }}
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 40,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Toggle for Demo */}
@@ -411,7 +513,9 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
-        {userType === "patient" ? renderPatientProfile() : renderDoctorProfile()}
+        {userType === "patient"
+          ? renderPatientProfile()
+          : renderDoctorProfile()}
       </ScrollView>
 
       {/* Doctor Request Modal */}
@@ -424,8 +528,10 @@ export default function Profile() {
       >
         <View className="bg-white rounded-t-3xl p-6 shadow-2xl">
           <View className="w-12 h-1 bg-gray-300 rounded-full self-center mb-4" />
-          
-          <Text className="text-gray-900 text-2xl font-bold mb-2">Become a Doctor</Text>
+
+          <Text className="text-gray-900 text-2xl font-bold mb-2">
+            Become a Doctor
+          </Text>
           <Text className="text-gray-600 text-sm mb-6">
             Fill in your details to request a doctor account
           </Text>
@@ -446,7 +552,9 @@ export default function Profile() {
             onChangeText={setSpecialty}
           />
 
-          <Text className="text-gray-700 font-semibold mb-2">Clinic / Hospital</Text>
+          <Text className="text-gray-700 font-semibold mb-2">
+            Clinic / Hospital
+          </Text>
           <TextInput
             placeholder="City Clinic, Harare"
             className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-6 text-base"
@@ -459,13 +567,12 @@ export default function Profile() {
             className="bg-teal-600 rounded-2xl py-4 items-center mb-3 shadow-lg"
             activeOpacity={0.8}
           >
-            <Text className="text-white font-bold text-base">Submit Request</Text>
+            <Text className="text-white font-bold text-base">
+              Submit Request
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={toggleModal}
-            className="py-3 items-center"
-          >
+          <TouchableOpacity onPress={toggleModal} className="py-3 items-center">
             <Text className="text-gray-500 font-medium">Cancel</Text>
           </TouchableOpacity>
         </View>

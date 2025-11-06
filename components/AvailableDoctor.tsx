@@ -13,18 +13,27 @@ export default function AvailableDoctor({ doctor }: any) {
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 4,
+        backgroundColor: "white",
       }}
     >
       <View className="doctors-center">
-        <View className="relative">
+        <View className="relative items-center">
           <Image
             source={{ uri: doctor.avatar }}
-            className="w-16 h-16 rounded-full"
+            style={{ width: 56, height: 56, borderRadius: 28 }}
           />
           <View
-            className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${
-              doctor.available ? "bg-green-500" : "bg-gray-400"
-            }`}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              width: 16,
+              height: 16,
+              borderRadius: 8,
+              borderWidth: 2,
+              borderColor: "#fff",
+              backgroundColor: doctor.available ? "#22c55e" : "#9ca3af", // green-500 or gray-400
+            }}
           />
         </View>
 

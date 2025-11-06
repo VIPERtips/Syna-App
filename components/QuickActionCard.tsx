@@ -21,6 +21,8 @@ export default function QuickActionCard({ item, onPress }: any) {
           shadowOpacity: 0.25,
           shadowRadius: 10,
           elevation: 6,
+          backgroundColor: "white",
+      
         }}
       >
         {/* Icon container */}
@@ -33,6 +35,7 @@ export default function QuickActionCard({ item, onPress }: any) {
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 4,
+            
           }}
         >
           <Ionicons name={item.icon} size={36} color={item.color} />
