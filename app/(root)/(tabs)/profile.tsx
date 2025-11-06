@@ -45,6 +45,9 @@ export default function Profile() {
 
       const data = await response.json();
       setFetchedUser(data?.data);
+      setUserType(fetchedUser?.role?.toLowerCase() || "patient");
+    console.log("User type:", fetchedUser?.role?.toLowerCase());
+      
     } catch (error) {
       console.error("Error logging in:", error);
     }
@@ -454,45 +457,13 @@ export default function Profile() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Toggle for Demo */}
-        <View className="bg-white rounded-2xl p-2 mb-4 flex-row shadow-sm">
-          <TouchableOpacity
-            onPress={() => setUserType("patient")}
-            className={`flex-1 py-3 rounded-xl ${
-              userType === "patient" ? "bg-teal-600" : "bg-transparent"
-            }`}
-          >
-            <Text
-              className={`text-center font-semibold ${
-                userType === "patient" ? "text-white" : "text-gray-600"
-              }`}
-            >
-              Patient View
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setUserType("doctor")}
-            className={`flex-1 py-3 rounded-xl ${
-              userType === "doctor" ? "bg-green-600" : "bg-transparent"
-            }`}
-          >
-            <Text
-              className={`text-center font-semibold ${
-                userType === "doctor" ? "text-white" : "text-gray-600"
-              }`}
-            >
-              Doctor View
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {userType === "patient"
           ? renderPatientProfile()
           : renderDoctorProfile()}
       </ScrollView>
 
       <Modal
-        isVisible={!isModalVisible}
+        isVisible={isModalVisible}
         onBackdropPress={toggleModal}
         style={{ justifyContent: "flex-end", margin: 0, height: 720 }}
         animationIn="slideInUp"
