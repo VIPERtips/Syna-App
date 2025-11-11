@@ -4,7 +4,6 @@ import { getAuthHeaders } from "@/lib";
 import { fetchAPI } from "@/lib/fetch";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -46,57 +45,76 @@ export default function Profile() {
 
   const openPendingModal = () => setPendingModalVisible(true);
   const closePendingModal = () => setPendingModalVisible(false);
-  
+  const [editingDoctorId, setEditingDoctorId] = useState<string | null>(null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+
+  const fetchCurrentUser = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const headers = await getAuthHeaders();
+
+      const userResponse = await fetchAPI(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/users/current?clerkUserId=${user.id}`,
+        { headers }
+      );
+      const userData = await userResponse;
+      const currentUser = userData?.data;
+
+      const doctorData = await fetchAPI(
+        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/doctors/current`,
+        { headers }
+      );
+
+      const mergedUser = {
+        ...currentUser,
+        doctorInfo: doctorData?.data || null,
+      };
+
+      setFetchedUser(mergedUser);
+
+      if (doctorData?.data) {
+        setUserType("doctor");
+        setAccountStatus(doctorData.data.accountStatus);
+      } else {
+        setUserType("patient");
+        setAccountStatus(null);
+      }
+
+      if (doctorData?.data?.accountStatus === "PENDING") {
+        setPendingModalVisible(true);
+      }
+    } catch (err) {
+      console.log("Error fetching user info:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      if (!user) return;
-      try {
-        setLoading(true);
-        const headers = await getAuthHeaders();
-
-        const userResponse = await fetchAPI(
-          `${process.env.EXPO_PUBLIC_SERVER_URL}/api/users/current?clerkUserId=${user.id}`,
-          { headers }
-        );
-        const userData = await userResponse.json();
-        const currentUser = userData?.data;
-
-        const doctorData = await fetchAPI(
-          `${process.env.EXPO_PUBLIC_SERVER_URL}/api/doctors/current`,
-          { headers }
-        );
-
-        const mergedUser = {
-          ...currentUser,
-          doctorInfo: doctorData?.data || null,
-        };
-
-        setFetchedUser(mergedUser);
-      
-
-        if (doctorData?.data) {
-          setUserType("doctor");
-          setAccountStatus(doctorData.data.accountStatus);
-        } else {
-          setUserType("patient");
-          setAccountStatus(null);
-        }
-
-        if (doctorData?.data?.accountStatus === "PENDING") {
-          setPendingModalVisible(true);
-        }
-      } catch (err) {
-        console.log("Error fetching user info:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCurrentUser();
   }, [user]);
 
-  const fullName = user?.firstName + " " + user?.lastName;
+  const handleEditPress = () => {
+    const doc = fetchedUser?.doctorInfo;
+    if (!doc) return;
+    setForm({
+      fullName: doc.fullName || `${user?.firstName} ${user?.lastName}`,
+      specialty: doc.specialty || "",
+      bio: doc.bio || "",
+      education: doc.education || "",
+      address: doc.address || "",
+      latitude: doc.latitude?.toString() || "",
+      longitude: doc.longitude?.toString() || "",
+      rating: doc.avgRating || 0,
+      imageUrl: doc.imageUrl || "",
+    });
+    setOriginalImageUrl(doc.imageUrl || null);
+    setEditingDoctorId(doc.doctorId || doc._id || null);
+    setModalVisible(true);
+  }
+
+
 
   const toggleModal = () => setModalVisible(!isModalVisible);
 
@@ -119,11 +137,10 @@ export default function Profile() {
       });
       formData.append("dto", dto);
 
-      if (form.imageUrl) {
+      if (form.imageUrl && form.imageUrl !== originalImageUrl) {
         const filename = form.imageUrl.split("/").pop()!;
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : `image`;
-
         formData.append("image", {
           uri: form.imageUrl,
           name: filename,
@@ -131,24 +148,34 @@ export default function Profile() {
         } as any);
       }
 
-      const response = await fetchAPI(
-        `${process.env.EXPO_PUBLIC_SERVER_URL}/api/doctors?clerkUserId=${user.id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          body: formData,
-        }
-      );
+      const headers: any = await getAuthHeaders();
+      delete headers["Content-Type"];
 
-      const data = await response.json();
-      console.log("Doctor request submitted:", data);
+
+
+
+      let url = `${process.env.EXPO_PUBLIC_SERVER_URL}/api/doctors?clerkUserId=${user.id}`;
+      let method: "POST" | "PUT" = "POST";
+
+      if (editingDoctorId) {
+        url = `${process.env.EXPO_PUBLIC_SERVER_URL}/api/doctors/${editingDoctorId}`;
+        method = "PUT";
+      }
+
+      const response = await fetchAPI(url, {
+        method,
+        headers,
+        body: formData,
+      });
+
+      const data = await response;
 
       if (data?.accountStatus === "PENDING") {
         openPendingModal();
       }
       setModalVisible(false);
+      setEditingDoctorId(null);
+      setOriginalImageUrl(null);
       setForm({
         fullName: "",
         specialty: "",
@@ -160,6 +187,7 @@ export default function Profile() {
         rating: 0,
         imageUrl: "",
       });
+      await fetchCurrentUser?.();
     } catch (error) {
       console.error("Error submitting doctor request:", error);
     } finally {
@@ -351,21 +379,41 @@ export default function Profile() {
         }}
       >
         <View className="flex-row items-center">
-          <Image
-            source={{ uri: fetchedUser?.doctorInfo.imageUrl || user?.imageUrl }}
-            className="w-24 h-24 rounded-full border-4 border-white"
-          />
+          <View className="relative">
+            <Image
+              source={{ uri: fetchedUser?.doctorInfo.imageUrl || user?.imageUrl }}
+              className="w-24 h-24 rounded-full border-4 border-white"
+            />
+            <TouchableOpacity
+              className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full border-2 border-white"
+              onPress={handleEditPress}
+            >
+              <Ionicons name="pencil" size={16} color="white" />
+            </TouchableOpacity>
+          </View>
+
           <View className="ml-5 flex-1">
-            <Text className="text-white text-2xl font-bold">
-              Dr. {user?.firstName} {user?.lastName}
-            </Text>
+            <View className="flex-row items-center justify-between">
+              <Text className="text-white text-2xl font-bold">
+                Dr. {user?.firstName} {user?.lastName}
+              </Text>
+              <TouchableOpacity
+                onPress={
+                  handleEditPress
+                }
+              >
+                <Ionicons name="create-outline" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+
             <Text className="text-blue-100 text-sm mt-1">
               {fetchedUser?.doctorInfo.specialty || "N/A"}
             </Text>
+
             <View className="flex-row items-center mt-2">
               <View className="bg-white/20 px-3 py-1 rounded-full">
                 <Text className="text-white text-xs font-medium">
-                  ⭐ {fetchedUser?.doctorInfo.avgRating || "0.0"}
+                  ⭐ {fetchedUser?.doctorInfo.avgRating?.toFixed(1) || "0.0"}
                 </Text>
               </View>
             </View>
@@ -410,13 +458,13 @@ export default function Profile() {
 
         <View className="mb-4">
           <Text className="text-gray-500 text-xs mb-1">Primary Clinic</Text>
-          <Text className="text-gray-900 text-base">{fetchedUser?.doctorInfo.address}</Text>
+          <Text className="text-gray-900 text-base">
+            {fetchedUser?.doctorInfo.address}
+          </Text>
         </View>
 
         <View className="mb-4">
-          <Text className="text-gray-500 text-xs mb-1">
-            EDUCATION
-          </Text>
+          <Text className="text-gray-500 text-xs mb-1">EDUCATION</Text>
           <Text className="text-gray-900 text-base">
             {fetchedUser?.doctorInfo.education}
           </Text>
@@ -622,7 +670,7 @@ export default function Profile() {
             <TextInput
               placeholder="Tadiwa Blessed"
               className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 mb-4 text-base"
-              value={fullName}
+              value={form.fullName}
               onChangeText={(val) => setForm({ ...form, fullName: val })}
             />
 
@@ -698,7 +746,7 @@ export default function Profile() {
               Clinic Location
             </Text>
             <View className="bg-gray-100 rounded-2xl overflow-hidden mb-3 self-center">
-              <View style={{ width: 350, height: 250, borderRadius: 16 }}>
+              <View style={{ width: 450, height: 250, borderRadius: 16 }}>
                 <Map
                   onLocationSelect={({ latitude, longitude, address }) =>
                     setForm({
@@ -737,45 +785,7 @@ export default function Profile() {
                 </Text>
               )}
             </TouchableOpacity>
-            {fetchedUser?.doctorInfo ? (
-              <View className="mb-4 items-center">
-                <Text className="text-gray-700 font-semibold mb-2">
-                  Doctor Request Status:
-                </Text>
-                <View className="bg-yellow-100 px-4 py-2 rounded-2xl">
-                  <Text className="text-yellow-800 font-bold">
-                    {fetchedUser.doctorInfo.accountStatus}
-                  </Text>
-                </View>
-
-                {fetchedUser.doctorInfo.accountStatus === "PENDING" && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      alert("Your doctor request is still pending")
-                    }
-                    className="bg-teal-600 rounded-2xl py-4 px-6 mt-4"
-                  >
-                    <Text className="text-white font-bold text-base">
-                      Check Status
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={submitDoctorRequest}
-                className="bg-teal-600 rounded-2xl py-4 px-6 mb-3 flex-row justify-center items-center"
-                disabled={Loading}
-              >
-                {Loading ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text className="text-white font-bold text-base">
-                    Submit Request
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
+            
 
             <TouchableOpacity
               onPress={toggleModal}

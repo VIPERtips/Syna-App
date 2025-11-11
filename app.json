@@ -3,7 +3,10 @@
     "name": "Syna",
     "slug": "syna",
     "version": "1.0.0",
-    "platforms": ["android","ios"],
+    "platforms": [
+      "android",
+      "ios"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "pali",
@@ -17,11 +20,6 @@
       "edgeToEdgeEnabled": true,
       "package": "co.zw.blexta.palii"
     },
-    // "web": {
-    //   "bundler": "metro",
-    //   "output": "server",
-    //   "favicon": "./assets/images/icon.png"
-    // },
     "plugins": [
       [
         "expo-router",
@@ -37,7 +35,9 @@
           "backgroundColor": "#008080",
           "imageWidth": 200
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

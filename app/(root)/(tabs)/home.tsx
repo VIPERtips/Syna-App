@@ -155,17 +155,6 @@ export default function Home() {
 
   const quickActions = userRole === "PATIENT" ? patientActions : doctorActions;
 
-  // const availableDoctors = [
-  //   {
-  //     id: "1",
-  //     name: "Dr. Austine M",
-  //     specialty: "Cardiologist",
-  //     rating: 4.9,
-  //     available: true,
-  //     avatar: "https://i.pravatar.cc/150?img=1",
-  //   }
-  // ];
-
   const todaysPatients = [
     {
       id: "1",
@@ -363,7 +352,7 @@ export default function Home() {
             <Text className="text-3xl font-JakartaExtraBold leading-tight">
               Welcome,{" "}
               <Text className="text-pali-secondary">
-                {userRole === "DOCTOR" ? "Dr. " : ""}
+                {userRole === "DOCTOR" && !capitalizedDisplayName.startsWith("Dr.") ? "Dr. " : ""}
                 {capitalizedDisplayName}
               </Text>
             </Text>
